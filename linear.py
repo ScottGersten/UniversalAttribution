@@ -271,20 +271,38 @@ if __name__ == '__main__':
             batch_size=batch_size,
             drop_last=False,
         )
-        model = LogRegModule(c, max_iter=max_train_iters, device=opt.device)
-        model.fit(train_features, train_labels)
+        # model = LogRegModule(c, max_iter=max_train_iters, device=opt.device)
+        # model.fit(train_features, train_labels)
+        # stats = evaluate_model(
+        #     model=model,
+        #     test_data_loader=test_data_loader,
+        #     out_data_loader=out_data_loader,
+        #     config=config 
+        # )
+        clf = LogRegModule(c, max_iter=max_train_iters, device=opt.device)
+        clf.fit(train_features, train_labels)
         stats = evaluate_model(
-            model=model,
+            model=clf,
             test_data_loader=test_data_loader,
             out_data_loader=out_data_loader,
             config=config 
         )
+
         # save detailed OSR results
-        df = pd.DataFrame(stats['out_result_details'])    
-        data = df.values
-        data = list(map(list,zip(*data)))
-        data = pd.DataFrame(data)
-        data.to_csv(os.path.join(run_dir, 'block-{}_{}_result_details.csv'.format(block)), header = 0)
+        # df = pd.DataFrame(stats['out_result_details'])    
+        # data = df.values
+        # data = list(map(list,zip(*data)))
+        # data = pd.DataFrame(data)
+        # data.to_csv(os.path.join(run_dir, 'block-{}_{}_result_details.csv'.format(block)), header = 0)
+        # logger.info(f"Block {block} results: {stats}")
+
+        out_details = stats.get('out_results_details', stats.get('out_result_details', {}))
+        if out_details:
+            df = pd.DataFrame(out_details)
+            data = df.values
+            data = list(map(list, zip(*data)))
+            data = pd.DataFrame(data)
+            data.to_csv(os.path.join(run_dir, f'block-{block}_result_details.csv'), header=0)
         logger.info(f"Block {block} results: {stats}")
 
 

@@ -11,7 +11,8 @@ class Config(object):
     batch_size = 8
     train_batch_size = 16
     eval_batch_size = 64
-    num_workers = 8
+    #num_workers = 8
+    num_workers = 0
     resize_size = (224, 224)
     samples_per_class = 4000
 

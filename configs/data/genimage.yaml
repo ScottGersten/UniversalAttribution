@@ -9,6 +9,43 @@ split1:
     out_data_paths:
         all: ./dataset/GenImage/split1_val/annotations/split1_val_out_all.txt
         test_all: ./dataset/GenImage/split1_test/annotations/split1_test_out_all.txt
+
+split1_tier1:
+    data_path: ./dataset/GenImage
+    known_classes: ['real', 'wukong', 'Midjourney', 'VQDM', 'stable_diffusion_v_1_4']
+    unknown_classes:
+        all: ['stable_diffusion_v_1_5', 'BigGAN', 'ADM', 'glide']
+    train_collection: split1_train
+    val_collection: split1_tier1
+    test_data_path: ./dataset/GenImage/split1_tier1/annotations/split1_tier1.txt
+    out_data_paths:
+        all: ./dataset/GenImage/split1_tier1/annotations/split1_tier1_out_all.txt
+        test_all: ./dataset/GenImage/split1_tier1/annotations/split1_tier1_out_all.txt
+
+split1_tier2:
+    data_path: ./dataset/GenImage
+    known_classes: ['real', 'wukong', 'Midjourney', 'VQDM', 'stable_diffusion_v_1_4']
+    unknown_classes:
+        all: ['stable_diffusion_v_1_5', 'BigGAN', 'ADM', 'glide']
+    train_collection: split1_train
+    val_collection: split1_tier2
+    test_data_path: ./dataset/GenImage/split1_tier2/annotations/split1_tier2.txt
+    out_data_paths:
+        all: ./dataset/GenImage/split1_tier2/annotations/split1_tier2_out_all.txt
+        test_all: ./dataset/GenImage/split1_tier2/annotations/split1_tier2_out_all.txt
+
+split1_tier3:
+    data_path: ./dataset/GenImage
+    known_classes: ['real', 'wukong', 'Midjourney', 'VQDM', 'stable_diffusion_v_1_4']
+    unknown_classes:
+        all: ['stable_diffusion_v_1_5', 'BigGAN', 'ADM', 'glide']
+    train_collection: split1_train
+    val_collection: split1_tier3
+    test_data_path: ./dataset/GenImage/split1_tier3/annotations/split1_tier3.txt
+    out_data_paths:
+        all: ./dataset/GenImage/split1_tier3/annotations/split1_tier3_out_all.txt
+        test_all: ./dataset/GenImage/split1_tier3/annotations/split1_tier3_out_all.txt
+
 split2:
     data_path: ./dataset/GenImage
     known_classes: ['real', 'Midjourney', 'VQDM', 'stable_diffusion_v_1_4', 'ADM']

@@ -78,7 +78,7 @@ def metric_ood(x1, x2, stypes=['Bas'], verbose=True):
         mtype = 'AUROC'
         tpr = np.concatenate([[1.], tp[stype] / tp[stype][0], [0.]])
         fpr = np.concatenate([[1.], fp[stype] / fp[stype][0], [0.]])
-        roc_auc = 100. * (-np.trapz(1. - fpr, tpr))
+        roc_auc = 100. * (-np.trapezoid(1. - fpr, tpr))
         results[stype][mtype] = roc_auc
         results[stype]['tpr'] = tpr
         results[stype]['fpr'] = fpr
@@ -98,7 +98,7 @@ def metric_ood(x1, x2, stypes=['Bas'], verbose=True):
         denom[denom == 0.] = -1.
         pin_ind = np.concatenate([[True], denom > 0., [True]])
         pin = np.concatenate([[.5], tp[stype] / denom, [0.]])
-        results[stype][mtype] = 100. * (-np.trapz(pin[pin_ind], tpr[pin_ind]))
+        results[stype][mtype] = 100. * (-np.trapezoid(pin[pin_ind], tpr[pin_ind]))
         if verbose:
             print(' {val:6.3f}'.format(val=results[stype][mtype]), end='')
 
@@ -108,7 +108,7 @@ def metric_ood(x1, x2, stypes=['Bas'], verbose=True):
         denom[denom == 0.] = -1.
         pout_ind = np.concatenate([[True], denom > 0., [True]])
         pout = np.concatenate([[0.], (fp[stype][0] - fp[stype]) / denom, [.5]])
-        results[stype][mtype] = 100. * (np.trapz(pout[pout_ind], 1. - fpr[pout_ind]))
+        results[stype][mtype] = 100. * (np.trapezoid(pout[pout_ind], 1. - fpr[pout_ind]))
         if verbose:
             print(' {val:6.3f}'.format(val=results[stype][mtype]), end='')
             print('')
