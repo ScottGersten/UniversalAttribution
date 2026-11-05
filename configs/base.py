@@ -9,10 +9,12 @@ class Config(object):
     input_data = 'img'
     transform = 'default'
     batch_size = 8
-    train_batch_size = 16
-    eval_batch_size = 64
-    #num_workers = 8
-    num_workers = 0
+    #train_batch_size = 16
+    train_batch_size = 128
+    #eval_batch_size = 64
+    eval_batch_size = 128
+    num_workers = 8
+    #num_workers = 0
     resize_size = (224, 224)
     samples_per_class = 4000
 

@@ -18,11 +18,6 @@ def apply_downsample_upsample(img: Image.Image, scale: float) -> Image.Image:
     return low_res.resize((w, h), Image.Resampling.BILINEAR)
 
 def apply_degradation_tier(img: Image.Image, tier: str) -> Image.Image:
-    """
-    Tier 1: Mild compression (standard web sharing)
-    Tier 2: Compounded moderate degradation (resizing + JPEG)
-    Tier 3: Aggressive lossy degradation (blur + heavy downsampling + low-Q JPEG)
-    """
     if tier == "tier1":
         return apply_jpeg_compression(img, quality=80)
     elif tier == "tier2":
@@ -49,20 +44,29 @@ def degrade_manifest(input_manifest_path: str, output_manifest_path: str, output
             continue
         img_path, label = parts[0], parts[1]
 
-        if not os.path.exists(img_path):
+        # Fix relative path handling if running from project root
+        if img_path.startswith("./"):
+            actual_img_path = img_path[2:]
+        else:
+            actual_img_path = img_path
+
+        if not os.path.exists(actual_img_path):
+            print(f"Warning: File not found {actual_img_path}")
             continue
 
-        img_name = os.path.basename(img_path)
+        img_name = os.path.basename(actual_img_path)
         out_img_name = f"{tier}_{img_name}"
         out_img_path = os.path.join(output_image_dir, out_img_name).replace("\\", "/")
+        
+        # Keep the ./ prefix in the manifest path for the YAML config
+        manifest_out_path = f"./{out_img_path}"
 
-        # Process and save degraded image
-        with Image.open(img_path) as img:
+        with Image.open(actual_img_path) as img:
             rgb_img = img.convert("RGB")
             degraded_img = apply_degradation_tier(rgb_img, tier)
             degraded_img.save(out_img_path, format="JPEG")
 
-        degraded_lines.append(f"{out_img_path}\t{label}\n")
+        degraded_lines.append(f"{manifest_out_path}\t{label}\n")
 
     with open(output_manifest_path, "w") as f:
         f.writelines(degraded_lines)
@@ -77,18 +81,17 @@ if __name__ == "__main__":
     base_dir = "./dataset/GenImage"
     target_tier = args.tier
 
-    # Perturb the validation known split
+    # 1. Update paths to point to the newly created pilot directories
     degrade_manifest(
-        input_manifest_path=f"{base_dir}/split1_val/annotations/split1_val.txt",
-        output_manifest_path=f"{base_dir}/split1_{target_tier}/annotations/split1_{target_tier}.txt",
-        output_image_dir=f"{base_dir}/split1_{target_tier}/images",
+        input_manifest_path=f"{base_dir}/split1_pilot_val/annotations/split1_pilot_val.txt",
+        output_manifest_path=f"{base_dir}/split1_pilot_{target_tier}/annotations/split1_pilot_{target_tier}.txt",
+        output_image_dir=f"{base_dir}/split1_pilot_{target_tier}/images",
         tier=target_tier
     )
 
-    # Perturb the validation unknown split
     degrade_manifest(
-        input_manifest_path=f"{base_dir}/split1_val/annotations/split1_val_out_all.txt",
-        output_manifest_path=f"{base_dir}/split1_{target_tier}/annotations/split1_{target_tier}_out_all.txt",
-        output_image_dir=f"{base_dir}/split1_{target_tier}/images",
+        input_manifest_path=f"{base_dir}/split1_pilot_val/annotations/split1_pilot_val_out_all.txt",
+        output_manifest_path=f"{base_dir}/split1_pilot_{target_tier}/annotations/split1_pilot_{target_tier}_out_all.txt",
+        output_image_dir=f"{base_dir}/split1_pilot_{target_tier}/images",
         tier=target_tier
     )
