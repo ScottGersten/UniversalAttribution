@@ -1,0 +1,13 @@
+python linear.py -c base -d GenImage:split=split1_pilot -b 8
+
+python linear.py -c base -d GenImage:split=split1_pilot -b 8 --C <your_optimal_value>
+
+python degrade.py --tier tier1
+
+python degrade.py --tier tier2
+
+python degrade.py --tier tier3
+
+python linear.py -c base -d GenImage:split=split1_pilot_tier1 -b 8 --C 31.62 && \
+python linear.py -c base -d GenImage:split=split1_pilot_tier2 -b 8 --C 31.62 && \
+python linear.py -c base -d GenImage:split=split1_pilot_tier3 -b 8 --C 31.62
