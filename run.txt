@@ -11,3 +11,5 @@ python degrade.py --tier tier3
 python linear.py -c base -d GenImage:split=split1_pilot_tier1 -b 8 --C 31.62 && \
 python linear.py -c base -d GenImage:split=split1_pilot_tier2 -b 8 --C 31.62 && \
 python linear.py -c base -d GenImage:split=split1_pilot_tier3 -b 8 --C 31.62
+
+python linear.py -c base -d GenImage:split=split1_pilot -b 8 --C 31.62 --gendet_epochs 15 --gendet_lr 5e-5

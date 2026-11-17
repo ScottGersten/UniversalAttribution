@@ -41,7 +41,9 @@ class GenDetAugmenter(nn.Module):
     def forward(self, features):
         delta = self.block(features)
         # Residual perturbation
-        return features + 0.1 * F.normalize(delta, p=2, dim=-1)
+        #return features + 0.1 * F.normalize(delta, p=2, dim=-1)
+        #return features + 0.03 * F.normalize(delta, p=2, dim=1)
+        return features + 0.01 * F.normalize(delta, p=2, dim=1)
 
 class TeacherStudentGate(nn.Module):
     """

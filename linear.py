@@ -39,7 +39,9 @@ def parse_args():
     parser.add_argument('--c_step', type=int, help='range of C values to sweep', default=45)
     parser.add_argument('--C', type=float, help='C value for linear classifier')
     parser.add_argument('--gendet_epochs', type=int, default=10, help='training epochs for GenDet modules')
-    parser.add_argument('--gendet_lr', type=float, default=1e-4, help='learning rate for GenDet modules')
+    #parser.add_argument('--gendet_lr', type=float, default=1e-4, help='learning rate for GenDet modules')
+    parser.add_argument('--gendet_lr', type=float, default=5e-5, help='learning rate for GenDet modules')
+    parser.add_argument('--gendet_margin', type=float, default=3.0, help='contrastive margin for Teacher-Student gate')
     parser.add_argument('--disable_gendet', action='store_true', help='disable GenDet pipeline and run baseline')
 
     parser.set_defaults(
@@ -63,9 +65,12 @@ def train_gendet_pipeline(
     train_labels,
     real_class_idx=0,
     device="cuda:0",
+    #epochs=10,
     epochs=10,
-    lr=1e-4,
-    batch_size=128
+    #lr=1e-4,
+    lr=5e-5,
+    batch_size=128,
+    margin=3.0
 ):
     """
     Trains the GenDet Augmenter and Teacher-Student Gate in feature space.
@@ -97,7 +102,8 @@ def train_gendet_pipeline(
 
             # Real minimizes discrepancy; Synthetic maximizes discrepancy
             loss_real = discrepancy[is_real].mean() if is_real.any() else torch.tensor(0.0, device=device)
-            loss_fake = torch.clamp(2.0 - discrepancy[is_fake], min=0.0).mean() if is_fake.any() else torch.tensor(0.0, device=device)
+            #loss_fake = torch.clamp(2.0 - discrepancy[is_fake], min=0.0).mean() if is_fake.any() else torch.tensor(0.0, device=device)
+            loss_fake = torch.clamp(margin - discrepancy[is_fake], min=0.0).mean() if is_fake.any() else torch.tensor(0.0, device=device)
             ts_loss = loss_real + loss_fake
             ts_loss.backward()
             student_optimizer.step()
@@ -205,7 +211,6 @@ def evaluate_model(
     in_targets, in_preds, closed_results = predict_set(model, test_data_loader, run_type='val')
     out_targets, out_preds = predict_set(model, out_data_loader, run_type='open-set')
 
-    # If TS Gate is present, replace softmax maximum with inverted discrepancy score
     if ts_gate is not None:
         device = next(ts_gate.parameters()).device
 
@@ -213,19 +218,37 @@ def evaluate_model(
         for feats, _ in test_data_loader:
             scores = ts_gate.get_anomaly_score(feats.to(device)).cpu().numpy()
             in_scores.append(scores)
-        x1 = -np.concatenate(in_scores, axis=0)
+        in_disc = np.concatenate(in_scores, axis=0)
 
         out_scores = []
         for feats, _ in out_data_loader:
             scores = ts_gate.get_anomaly_score(feats.to(device)).cpu().numpy()
             out_scores.append(scores)
-        x2 = -np.concatenate(out_scores, axis=0)
+        out_disc = np.concatenate(out_scores, axis=0)
+
+        # Negative discrepancy for metric_ood (higher = in-distribution)
+        x1 = -in_disc
+        x2 = -out_disc
+
+        # Gate-modulated confidence for OSCR:
+        # Normalize discrepancy using in-distribution median/IQR so known samples stay near 1.0
+        # while high-discrepancy OOD samples decay smoothly toward 0.0
+        med = np.median(in_disc)
+        scale = np.percentile(in_disc, 75) - np.percentile(in_disc, 25) + 1e-6
+        in_gate_weight = 1.0 / (1.0 + np.exp((in_disc - med) / scale))
+        out_gate_weight = 1.0 / (1.0 + np.exp((out_disc - med) / scale))
+
+        oscr_in_preds = in_preds * in_gate_weight[:, None]
+        oscr_out_preds = out_preds * out_gate_weight[:, None]
     else:
         x1, x2 = np.max(in_preds, axis=1), np.max(out_preds, axis=1)
+        oscr_in_preds = in_preds
+        oscr_out_preds = out_preds
 
     out_results = metric_ood(x1, x2)
-    oscr_score = compute_oscr(in_preds, out_preds, in_targets)
+    oscr_score = compute_oscr(oscr_in_preds, oscr_out_preds, in_targets)
     logger.info('OSCR: %.4f' % oscr_score['oscr'])
+
     out_result_details = {}
     for i, label_u in enumerate(np.unique(out_targets)):
         pred_u = out_preds[out_targets == label_u]
@@ -350,7 +373,8 @@ if __name__ == '__main__':
                 real_class_idx=real_idx,
                 device=opt.device,
                 epochs=opt.gendet_epochs,
-                lr=opt.gendet_lr
+                lr=opt.gendet_lr,
+                margin=opt.gendet_margin
             )
             logger.info(f"Augmented training pool: {train_features.shape[0]} -> {probe_train_features.shape[0]} vectors")
 

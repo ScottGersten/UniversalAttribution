@@ -1,0 +1,43 @@
+(/umbc/rs/pi_sherman/users/sgerste1/conda_envs/attribution_env) [sgerste1@g24-08 UniversalAttribution]$ python linear.py -c base -d GenImage:split=split1_pilot -b 8 --C 31.62 --gendet_epochs 10 --gendet_lr 5e-5 --gendet_margin 3.0
+cuML not found, using sklearn
+logging to output/linear-probe/vit_base_patch16_clip_224.openai
+Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_clip_224.openai)
+HTTP Request: HEAD https://huggingface.co/timm/vit_base_patch16_clip_224.openai/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+HTTP Request: HEAD https://huggingface.co/timm/vit_base_patch16_clip_224.openai/resolve/main/pytorch_model.bin "HTTP/1.1 302 Found"
+Config loaded from:  /umbc/rs/pi_sherman/users/sgerste1/UniversalAttribution/configs/data/genimage.yaml
+{'split': 'split1_pilot'}
+train: 4000, val: 5000, test 5000
+all: 10000
+test_all: 10000
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 32/32 [00:38<00:00,  1.21s/it]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [00:08<00:00,  4.60it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 79/79 [00:14<00:00,  5.50it/s]
+Training GenDet Augmenter and Teacher-Student Gate for Block 8...
+Augmented training pool: 16000 -> 28000 vectors
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 79/79 [00:14<00:00,  5.57it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [00:08<00:00,  4.63it/s]
+/umbc/rs/pi_sherman/users/sgerste1/conda_envs/attribution_env/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 1000 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=1000).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+val results: {'recalls': array([0.92371429, 0.95      , 0.962     , 0.992     ]), 'recall': 0.9569285714285714, 'f1': 0.9109978648412502, 'accuracy': 0.937}
+val confusion matrix: [[3233   59  129   79]
+ [   9  475   12    4]
+ [  11    6  481    2]
+ [   2    2    0  496]]
+       TNR    AUROC  DTACC  AUIN   AUOUT 
+Bas     9.160 76.336 76.030 74.651 80.231
+OSCR: 0.7316
+stable_diffusion_v_1_5           mostly pred class: wukong               average score: 3.6817030906677246       AUROC (%): 76.25
+BigGAN           mostly pred class: VQDM                 average score: 3.6743199825286865       AUROC (%): 76.21
+ADM              mostly pred class: real                 average score: 3.693338394165039        AUROC (%): 76.52
+glide            mostly pred class: Midjourney           average score: 3.678036689758301        AUROC (%): 76.36
+Block 8 results: {'AUC': np.float64(76.33551), 'OSCR': 73.15587799999994, 'accuracy': 93.7, 'out_results_details': {'0': {'unknown_class': '\tstable_diffusion_v_1_5', 'pred_class': '\twukong', 'average_score': '\t3.6817', 'AUROC': '\t76.25'}, '1': {'unknown_class': '\tBigGAN', 'pred_class': '\tVQDM', 'average_score': '\t3.6743', 'AUROC': '\t76.21'}, '2': {'unknown_class': '\tADM', 'pred_class': '\treal', 'average_score': '\t3.6933', 'AUROC': '\t76.52'}, '3': {'unknown_class': '\tglide', 'pred_class': '\tMidjourney', 'average_score': '\t3.678', 'AUROC': '\t76.36'}}}
+(/umbc/rs/pi_sherman/users/sgerste1/conda_envs/attribution_env) [sgerste1@g24-08 UniversalAttribution]$ 
